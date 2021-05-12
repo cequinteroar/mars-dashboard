@@ -2,12 +2,15 @@ let store = {
     user: { name: "Student" },
     apod: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
+    metadata: '',
 }
 
 // add our markup to the page
 const root = document.getElementById('root')
 
 const updateStore = (store, newState) => {
+    console.log(store)
+    console.log(newState)
     store = Object.assign(store, newState)
     render(root, store)
 }
@@ -19,7 +22,7 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-    let { rovers, apod } = state
+    let { rovers, apod, metadata } = state
 
     return `
         <header></header>
@@ -37,6 +40,12 @@ const App = (state) => {
                     but generally help with discoverability of relevant imagery.
                 </p>
                 ${ImageOfTheDay(apod)}
+            </section>
+            <section>
+                <h1>Metada from mars landrovers</h1>
+
+                <h2>${rovers[0]}</h2>
+                ${specificRoverData(metadata, "Curiosity")}
             </section>
         </main>
         <footer></footer>
@@ -72,7 +81,7 @@ const ImageOfTheDay = (apod) => {
     console.log(photodate.getDate(), today.getDate());
 
     console.log(photodate.getDate() === today.getDate());
-    if (!apod || apod.date === today.getDate() ) {
+    if (!apod || apod.date === today.getDate()) {
         getImageOfTheDay(store)
     }
 
@@ -91,6 +100,18 @@ const ImageOfTheDay = (apod) => {
     }
 }
 
+const specificRoverData = (metadata, value) => {
+    getRoverMetadata(metadata, value);
+    const metaInfo = metadata.photo_manifest;
+    console.log(metadata)
+    return(`
+        <p>The landrover ${metaInfo} provides this useful information:</p>
+        <ul>
+            <li>Landing date: ${metaInfo}</li>
+        </ul>    
+    `)
+}
+
 // ------------------------------------------------------  API CALLS
 
 // Example API call
@@ -102,4 +123,12 @@ const getImageOfTheDay = (state) => {
         .then(apod => updateStore(store, { apod }))
 
     return data
+}
+
+//  Get Rover metadata
+const getRoverMetadata = (state, rover) => {
+    let { metadata } = state;
+    fetch(`http://localhost:3000/rover-data/${rover}`)
+        .then(res => res.json())
+        .then(metadata => updateStore(store, { metadata }));
 }

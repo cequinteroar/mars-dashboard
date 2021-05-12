@@ -14,6 +14,20 @@ app.use('/', express.static(path.join(__dirname, '../public')))
 
 // your API calls
 
+// Images + meta data : Mars Rover Photos: https://github.com/chrisccerami/mars-photo-api
+
+//  Get Metadata from each rover according to the value specified "rover"
+app.get('/rover-data/:rover', async (req, res) => {
+    try {
+        const rover = req.params.rover;
+        let roverData = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${process.env.API_KEY}`)
+            .then(res => res.json());
+        res.send({ roverData });
+    } catch(err) {
+        console.log("error: ", err);
+    }
+})
+
 // example API call
 app.get('/apod', async (req, res) => {
     try {
