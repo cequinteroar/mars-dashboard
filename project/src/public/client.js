@@ -9,8 +9,6 @@ let store = {
 const root = document.getElementById('root')
 
 const updateStore = (store, newState) => {
-    console.log(store)
-    console.log(newState)
     store = Object.assign(store, newState)
     render(root, store)
 }
@@ -45,7 +43,13 @@ const App = (state) => {
                 <h1>Metada from mars landrovers</h1>
 
                 <h2>${rovers[0]}</h2>
-                ${specificRoverData(metadata, "Curiosity")}
+                ${specificRoverData(metadata, rovers[0])}
+
+                <h2>${rovers[1]}</h2>
+                ${specificRoverData(metadata, rovers[1])}
+
+                <h2>${rovers[2]}</h2>
+                ${specificRoverData(metadata, rovers[2])}
             </section>
         </main>
         <footer></footer>
@@ -101,13 +105,19 @@ const ImageOfTheDay = (apod) => {
 }
 
 const specificRoverData = (metadata, value) => {
-    getRoverMetadata(metadata, value);
-    const metaInfo = metadata.photo_manifest;
-    console.log(metadata)
+    if(!metadata)
+        getRoverMetadata(metadata, value);
+        
+    const metaInfo = metadata.roverData.photo_manifest;
+    
     return(`
-        <p>The landrover ${metaInfo} provides this useful information:</p>
+        <p>The landrover ${metaInfo.name} provides this useful information:</p>
         <ul>
-            <li>Landing date: ${metaInfo}</li>
+            <li>Landing date: ${metaInfo.landing_date}</li>
+            <li>Launch date: ${metaInfo.launch_date}</li>
+            <li>Status: ${metaInfo.status}</li>
+            <li>Total number of photos taken: ${metaInfo.total_photos}</li>
+            <li>Martian rotation or day (sol): ${metaInfo.max_sol}</li>
         </ul>    
     `)
 }
@@ -122,7 +132,7 @@ const getImageOfTheDay = (state) => {
         .then(res => res.json())
         .then(apod => updateStore(store, { apod }))
 
-    return data
+    return apod;
 }
 
 //  Get Rover metadata
@@ -131,4 +141,6 @@ const getRoverMetadata = (state, rover) => {
     fetch(`http://localhost:3000/rover-data/${rover}`)
         .then(res => res.json())
         .then(metadata => updateStore(store, { metadata }));
+    
+    return metadata;
 }
