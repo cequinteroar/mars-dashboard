@@ -28,6 +28,20 @@ app.get('/rover-data/:rover', async (req, res) => {
     }
 })
 
+// Photos API
+app.get('/rover-photos/:rover', async (req, res) => {
+    try {
+        const rover = req.params.rover;
+        let roverPhotos = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover.toLowerCase()}/latest_photos?api_key=${process.env.API_KEY}`)
+            .then(res => res.json());
+            
+        res.send({ roverPhotos });
+    }catch(err) {
+        console.log("Error in Photos: ", error);
+    }
+
+})
+
 // example API call
 app.get('/apod', async (req, res) => {
     try {

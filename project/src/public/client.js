@@ -1,8 +1,20 @@
+// const { default: fetch } = require("node-fetch");
+
+// let store = Immutable.Map({
+//     user: { name: "Student" },
+//     apod: '',
+//     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
+//     metadata: '',
+//     photos: [],
+// })
+
+
 let store = {
     user: { name: "Student" },
     apod: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
     metadata: '',
+    photos: '',
 }
 
 // add our markup to the page
@@ -20,7 +32,7 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-    let { rovers, apod, metadata } = state
+    let { rovers, apod, metadata, photos } = state
 
     return `
         <header></header>
@@ -44,12 +56,15 @@ const App = (state) => {
 
                 <h2>${rovers[0]}</h2>
                 ${specificRoverData(metadata, rovers[0])}
+                ${specificRoverPhotos(photos, rovers[0])}
 
                 <h2>${rovers[1]}</h2>
                 ${specificRoverData(metadata, rovers[1])}
+                ${specificRoverPhotos(photos, rovers[1])}
 
                 <h2>${rovers[2]}</h2>
                 ${specificRoverData(metadata, rovers[2])}
+                ${specificRoverPhotos(photos, rovers[2])}
             </section>
         </main>
         <footer></footer>
@@ -97,6 +112,9 @@ const ImageOfTheDay = (apod) => {
             <p>${apod.explanation}</p>
         `)
     } else {
+        if(!apod.image)
+            return;
+            
         return (`
             <img src="${apod.image.url}" height="350px" width="100%" />
             <p>${apod.image.explanation}</p>
@@ -107,7 +125,9 @@ const ImageOfTheDay = (apod) => {
 const specificRoverData = (metadata, value) => {
     if(!metadata)
         getRoverMetadata(metadata, value);
-        
+    if(!metadata.roverData)    
+        return(``)
+    
     const metaInfo = metadata.roverData.photo_manifest;
     
     return(`
@@ -120,6 +140,15 @@ const specificRoverData = (metadata, value) => {
             <li>Martian rotation or day (sol): ${metaInfo.max_sol}</li>
         </ul>    
     `)
+}
+
+const specificRoverPhotos = (photos, value) => {
+    if(!photos)
+        getRoverLastPhotos(photos, value);
+    
+    const roverPhotos = photos.roverPhotos.latest_photos;
+
+    return roverPhotos.map(photo => `<img src="${photo.img_src}" height="350px" width="350px" />`)
 }
 
 // ------------------------------------------------------  API CALLS
@@ -143,4 +172,14 @@ const getRoverMetadata = (state, rover) => {
         .then(metadata => updateStore(store, { metadata }));
     
     return metadata;
+}
+
+//  Get Rover last photos
+const getRoverLastPhotos = (state, rover) => {
+    let { photos } = state;
+    fetch(`http://localhost:3000/rover-photos/${rover}`)
+        .then(res => res.json())
+        .then(photos => updateStore(store, { photos }));
+
+    return photos;
 }
