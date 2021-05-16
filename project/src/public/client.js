@@ -15,6 +15,7 @@ let store = {
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
     metadata: '',
     photos: '',
+    selectedRover: 'Curiosity',
 }
 
 // add our markup to the page
@@ -32,15 +33,17 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-    let { rovers, apod, metadata, photos } = state
+    let { rovers, apod, metadata, photos, selectedRover } = state;
 
     return `
         <header></header>
         <main>
             ${Greeting(store.user.name)}
             <section>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
+            ${radioButtons(selectedRover)}
+            </section>
+            <section>
+                <h3>Image of the day</h3>
                 <p>
                     One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
                     the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
@@ -51,21 +54,7 @@ const App = (state) => {
                 </p>
                 ${ImageOfTheDay(apod)}
             </section>
-            <section>
-                <h1>Metada from mars landrovers</h1>
-
-                <h2>${rovers[0]}</h2>
-                ${specificRoverData(metadata, rovers[0])}
-                ${specificRoverPhotos(photos, rovers[0])}
-
-                <h2>${rovers[1]}</h2>
-                ${specificRoverData(metadata, rovers[1])}
-                ${specificRoverPhotos(photos, rovers[1])}
-
-                <h2>${rovers[2]}</h2>
-                ${specificRoverData(metadata, rovers[2])}
-                ${specificRoverPhotos(photos, rovers[2])}
-            </section>
+            ${roverSuite(metadata, photos, selectedRover)}
         </main>
         <footer></footer>
     `
@@ -74,6 +63,14 @@ const App = (state) => {
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
     render(root, store)
+
+    //  Start point for dashboard information
+    getRoverMetadata(store.metadata, "Curiosity");
+    getRoverLastPhotos(store.photos, "Curiosity");
+    document.body.addEventListener("change", (event) => {
+        if(event.target.name === "landrover")
+            selectRovers(event.target.value);
+    })
 })
 
 // ------------------------------------------------------  COMPONENTS
@@ -82,13 +79,46 @@ window.addEventListener('load', () => {
 const Greeting = (name) => {
     if (name) {
         return `
-            <h1>Welcome, ${name}!</h1>
+            <h1 class="banner">Welcome, ${name}! to the ICOS Mars Rover Dashboards</h1>
         `
     }
 
     return `
         <h1>Hello!</h1>
     `
+}
+
+const radioButtons = (selectedRover) => {
+    return (`
+        <div class="radio-container">
+            <label class="radio-inline" for="radio-image">
+                <input type="radio" id="radio-image" name="landrover" value="Image" >I
+            </label>
+
+            <label class="radio-inline" for="radio-curiosity">
+                <input type="radio" id="radio-curiosity" name="landrover" value="Curiosity" >C
+            </label>
+            
+            <label class="radio-inline" for="radio-opportunity">
+                <input type="radio" id="radio-opportunity" name="landrover" value="Opportunity">O
+            </label>
+
+            <label class="radio-inline" for="radio-spirit">
+                <input type="radio" id="radio-spirit" name="landrover" value="Spirit">S
+            </label>  
+        </div>  
+    `)
+}
+
+//  Function to update the rover info and photos
+const selectRovers = (rover) => {
+    if(rover === "Image"){
+        getImageOfTheDay(store);
+    }else{
+        updateStore(store, {selectedRover: rover});
+        getRoverMetadata(store.metadata, rover);
+        getRoverLastPhotos(store.photos, rover);
+    }
 }
 
 // Example of a pure function that renders infomation requested from the backend
@@ -100,9 +130,9 @@ const ImageOfTheDay = (apod) => {
     console.log(photodate.getDate(), today.getDate());
 
     console.log(photodate.getDate() === today.getDate());
-    if (!apod || apod.date === today.getDate()) {
-        getImageOfTheDay(store)
-    }
+    // if (!apod || apod.date === today.getDate()) {
+    //     getImageOfTheDay(store)
+    // }
 
     // check if the photo of the day is actually type video!
     if (apod.media_type === "video") {
@@ -122,11 +152,7 @@ const ImageOfTheDay = (apod) => {
     }
 }
 
-const specificRoverData = (metadata, value) => {
-    if(!metadata)
-        getRoverMetadata(metadata, value);
-    if(!metadata.roverData)    
-        return(``)
+const specificRoverData = (metadata) => {
     
     const metaInfo = metadata.roverData.photo_manifest;
     
@@ -142,13 +168,24 @@ const specificRoverData = (metadata, value) => {
     `)
 }
 
-const specificRoverPhotos = (photos, value) => {
-    if(!photos)
-        getRoverLastPhotos(photos, value);
+const specificRoverPhotos = (photos) => {
     
     const roverPhotos = photos.roverPhotos.latest_photos;
 
     return roverPhotos.map(photo => `<img src="${photo.img_src}" height="350px" width="350px" />`)
+}
+
+
+const roverSuite = (metadata, photos, selectedRover) => {
+    return (`
+        <section>
+            <h1>Metadata from mars landrovers</h1>
+
+            <h2>${selectedRover}</h2>
+            ${specificRoverData(metadata)}
+            ${specificRoverPhotos(photos)}
+        </section>    
+    `)
 }
 
 // ------------------------------------------------------  API CALLS
@@ -160,8 +197,6 @@ const getImageOfTheDay = (state) => {
     fetch(`http://localhost:3000/apod`)
         .then(res => res.json())
         .then(apod => updateStore(store, { apod }))
-
-    return apod;
 }
 
 //  Get Rover metadata
@@ -170,8 +205,6 @@ const getRoverMetadata = (state, rover) => {
     fetch(`http://localhost:3000/rover-data/${rover}`)
         .then(res => res.json())
         .then(metadata => updateStore(store, { metadata }));
-    
-    return metadata;
 }
 
 //  Get Rover last photos
@@ -180,6 +213,4 @@ const getRoverLastPhotos = (state, rover) => {
     fetch(`http://localhost:3000/rover-photos/${rover}`)
         .then(res => res.json())
         .then(photos => updateStore(store, { photos }));
-
-    return photos;
 }
