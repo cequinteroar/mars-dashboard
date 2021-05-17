@@ -42,19 +42,7 @@ const App = (state) => {
             <section>
             ${radioButtons(selectedRover)}
             </section>
-            <section>
-                <h3>Image of the day</h3>
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
-                ${ImageOfTheDay(apod)}
-            </section>
-            ${roverSuite(metadata, photos, selectedRover)}
+            ${selectedRover === "Image" ? renderImage(apod) : roverSuite(metadata, photos, selectedRover)}
         </main>
         <footer></footer>
     `
@@ -65,8 +53,10 @@ window.addEventListener('load', () => {
     render(root, store)
 
     //  Start point for dashboard information
-    getRoverMetadata(store.metadata, "Curiosity");
-    getRoverLastPhotos(store.photos, "Curiosity");
+    if(store.selectedRover !== "Image"){
+        getRoverMetadata(store.metadata, "Curiosity");
+        getRoverLastPhotos(store.photos, "Curiosity");
+    }
     document.body.addEventListener("change", (event) => {
         if(event.target.name === "landrover")
             selectRovers(event.target.value);
@@ -110,12 +100,29 @@ const radioButtons = (selectedRover) => {
     `)
 }
 
+const renderImage = (apod) => {
+    return(`    
+        <section>
+            <h3>Image of the day</h3>
+            <p>
+                One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
+                the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
+                This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
+                applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
+                explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
+                but generally help with discoverability of relevant imagery.
+            </p>
+            ${ImageOfTheDay(apod)}
+        </section>
+    `)
+} 
+
 //  Function to update the rover info and photos
 const selectRovers = (rover) => {
+    updateStore(store, {selectedRover: rover});
     if(rover === "Image"){
         getImageOfTheDay(store);
     }else{
-        updateStore(store, {selectedRover: rover});
         getRoverMetadata(store.metadata, rover);
         getRoverLastPhotos(store.photos, rover);
     }
