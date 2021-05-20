@@ -94,19 +94,25 @@ const Greeting = (name) => {
     `
 }
 
+//  Photo slider control
 const photoAdvance = (value) => {
     let iter = 0;
     const storeIterator = store.get("iterator");
     const photos = store.get("photos");
     const latest_photos = photos.roverPhotos.latest_photos;
-    if (latest_photos.length  > storeIterator)
-        iter = storeIterator + value;
-    if(storeIterator === 0 && value < 0)
-        iter = latest_photos.length - 1;
+    if(storeIterator === latest_photos.length - 1 && value > 0){
+        iter = 0
+    }else{
+        if (storeIterator <= latest_photos.length - 1)
+            iter = storeIterator + value;
+        if(storeIterator === 0 && value < 0)
+            iter = latest_photos.length - 1;
+    }
     const newStore = store.set("iterator", iter);
     updateStore(store, newStore)
 }
 
+//  ICOS selection system based on input radio buttons
 const radioButtons = (selectedRover) => {
     return (`
         <div class="radio-container">
@@ -129,7 +135,7 @@ const radioButtons = (selectedRover) => {
     `)
 }
 
-
+//  Render the image of the day
 const renderImage = (apod) => {
     return (`    
         <section>
@@ -159,7 +165,7 @@ const selectRovers = (rover) => {
     }
 }
 
-// Example of a pure function that renders infomation requested from the backend
+// Image of the day section
 const ImageOfTheDay = (apod) => {
 
     // If image does not already exist, or it is not from today -- request it again
@@ -185,25 +191,39 @@ const ImageOfTheDay = (apod) => {
     }
 }
 
+//  Section to render the rover meta data
 const specificRoverData = (metadata) => {
 
     if (!metadata || !metadata.roverData)
         return ``;
 
     const metaInfo = metadata.roverData.photo_manifest;
+    let icon ="";
+    switch(metaInfo.status){
+        case "active":
+            icon = '<i class="fas fa-wave-square"></i>';
+            break;
+        case "complete":
+            icon = '<i class="fas fa-check-circle"></i>';
+            break;
+        default:
+            icon = '<i class="fas fa-times-circle"></i>';
+            break;
+    }
 
     return (`
         <p>The landrover ${metaInfo.name} provides this useful information:</p>
         <ul>
-            <li>Landing date: ${metaInfo.landing_date}</li>
-            <li>Launch date: ${metaInfo.launch_date}</li>
-            <li>Status: ${metaInfo.status}</li>
-            <li>Total number of photos taken: ${metaInfo.total_photos}</li>
-            <li>Martian rotation or day (sol): ${metaInfo.max_sol}</li>
+            <li><i class="fas fa-plane-arrival"></i> <b>Landing date:</b> ${metaInfo.landing_date}</li>
+            <li><i class="fas fa-rocket"></i> <b>Launch date:</b> ${metaInfo.launch_date}</li>
+            <li>${icon} <b>Status:</b> ${metaInfo.status}</li>
+            <li><i class="far fa-images"></i> <b>Photos taken:</b> ${metaInfo.total_photos}</li>
+            <li><i class="fas fa-calendar-day"></i> <b>Martian rotation or day (sol):</b> ${metaInfo.max_sol}</li>
         </ul>    
     `)
 }
 
+//  Section to render the rover photos
 const specificRoverPhotos = (photos) => {
 
     if (!photos || !photos.roverPhotos)
@@ -222,12 +242,11 @@ const specificRoverPhotos = (photos) => {
         `)
 }
 
+//  Section to show the data got from the API
 const roverSuite = (metadata, photos, selectedRover) => {
     return (`
         <section>
-            <h1>Metadata from mars landrovers</h1>
-
-            <h2>${selectedRover}</h2>
+            <h1 class="rover-name">${selectedRover}</h2>
             ${specificRoverData(metadata)}
             ${specificRoverPhotos(photos)}
         </section>    
@@ -260,8 +279,8 @@ const getRoverMetadata = (rover) => {
 }
 
 //  Get Rover last photos
-const getRoverLastPhotos = (rover) => {
-    fetch(`http://localhost:3000/rover-photos/${rover}`)
+const getRoverLastPhotos = async (rover) => {
+    await fetch(`http://localhost:3000/rover-photos/${rover}`)
         .then(res => res.json())
         .then(photos => {
             const newStore = store.set("photos", photos).set("iterator", 0);

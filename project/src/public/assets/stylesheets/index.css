@@ -76,6 +76,10 @@ p,li {
   color: white;
 }
 
+.rover-name {
+  color: rgb(124, 42, 42);
+}
+
 .rover-image {
   display: flex;
   justify-content: center;
@@ -94,13 +98,17 @@ p,li {
   width: 30px;
   border: 0;
   background-color: transparent;
-  color: rgb(124, 42, 42);
-  font-size: 20px;
+  color: white;
+  font-size: 26px;
   height: 50px;
 }
 
 .select-btn:active {
-  color: white;
+  color: rgb(124, 42, 42);
+}
+
+ul {
+  list-style: none;
 }
 
 /* -------------------  TABLET  --------------------- */
