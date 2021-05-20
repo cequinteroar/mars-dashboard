@@ -1,28 +1,29 @@
 
-
-// let store = Immutable.Map({
-//     user: { name: "Student" },
-//     apod: '',
-//     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-//     metadata: '',
-//     photos: [],
-// })
-
-
-let store = {
+const store = Immutable.Map({
     user: { name: "Dear Visitor" },
     apod: '',
     metadata: '',
     photos: '',
     selectedRover: 'Curiosity',
     iterator: 0
-}
+})
+
+
+// let store = {
+//     user: { name: "Dear Visitor" },
+//     apod: '',
+//     metadata: '',
+//     photos: '',
+//     selectedRover: 'Curiosity',
+//     iterator: 0
+// }
 
 // add our markup to the page
 const root = document.getElementById('root')
 
 const updateStore = (store, newState) => {
-    store = Object.assign(store, newState)
+    const newStore = store.merge(store, newState);
+    store = Object.assign(store, newStore)
     render(root, store)
 }
 
@@ -32,13 +33,17 @@ const render = async (root, state) => {
 
 
 // create content
-const App = (state) => {
-    let { apod, metadata, photos, selectedRover } = state;
+const App = (appState) => {
+    const user = appState.get('user');
+    const apod = appState.get('apod');
+    const metadata = appState.get('metadata');
+    const photos = appState.get('photos');
+    const selectedRover = appState.get('selectedRover');
 
     return `
         <header></header>
         <main>
-            ${Greeting(store.user.name)}
+            ${Greeting(user.name)}
             <section>
             ${radioButtons(selectedRover)}
             </section>
@@ -53,9 +58,9 @@ window.addEventListener('load', () => {
     render(root, store);
 
     //  Start point for dashboard information
-    if (store.selectedRover !== "Image") {
-        getRoverMetadata(store.metadata, "Curiosity");
-        getRoverLastPhotos(store.photos, "Curiosity");
+    if (store.get('selectedRover') !== "Image") {
+        getRoverMetadata("Curiosity");
+        getRoverLastPhotos("Curiosity");
     }
     
     document.body.addEventListener("change", (event) => {
@@ -67,11 +72,10 @@ window.addEventListener('load', () => {
     });
 
     document.body.addEventListener("click", (event) => {
-        const photos = store.photos.roverPhotos.latest_photos;
         if (event.target.id === "photoplus")
-            photoPlus(photos);
+            photoAdvance(1);
         if (event.target.id === "photominus")
-            photoMinus(photos);
+            photoAdvance(-1);
     });
 })
 
@@ -90,18 +94,17 @@ const Greeting = (name) => {
     `
 }
 
-const photoPlus = (photos) => {
+const photoAdvance = (value) => {
     let iter = 0;
-    if (photos.length - 1 > store.iterator)
-        iter = store.iterator + 1;
-    updateStore(store, { iterator: iter })
-}
-
-const photoMinus = (photos) => {
-    let iter = 0;
-    if (photos.length - 1 > store.iterator)
-        iter = store.iterator + 1;
-    updateStore(store, { iterator: iter })
+    const storeIterator = store.get("iterator");
+    const photos = store.get("photos");
+    const latest_photos = photos.roverPhotos.latest_photos;
+    if (latest_photos.length  > storeIterator)
+        iter = storeIterator + value;
+    if(storeIterator === 0 && value < 0)
+        iter = latest_photos.length - 1;
+    const newStore = store.set("iterator", iter);
+    updateStore(store, newStore)
 }
 
 const radioButtons = (selectedRover) => {
@@ -146,12 +149,13 @@ const renderImage = (apod) => {
 
 //  Function to update the rover info and photos
 const selectRovers = (rover) => {
-    updateStore(store, { selectedRover: rover });
+    const newStore = store.set("selectedRover", rover)
+    updateStore(store, newStore);
     if (rover === "Image") {
-        getImageOfTheDay(store);
+        getImageOfTheDay();
     } else {
-        getRoverMetadata(store.metadata, rover);
-        getRoverLastPhotos(store.photos, rover);
+        getRoverMetadata(rover);
+        getRoverLastPhotos(rover);
     }
 }
 
@@ -206,13 +210,13 @@ const specificRoverPhotos = (photos) => {
         return ``;
 
     const roverPhotos = photos.roverPhotos.latest_photos;
-    const imgs = roverPhotos.map(photo => `<img class="rover-photo" src="${photo.img_src}"  />`);
+    const iterator = store.get("iterator");
     const imgUrls = roverPhotos.map(photo => photo.img_src);
 
     return (`
             <div class="rover-image"> 
                 <button class="select-btn" id="photominus">\<</button>
-                <img class="rover-photo" src="${imgUrls[store.iterator]}"  />
+                <img class="rover-photo" src="${imgUrls[iterator]}"  />
                 <button class="select-btn" id="photoplus">\></button>
             </div>
         `)
@@ -233,26 +237,35 @@ const roverSuite = (metadata, photos, selectedRover) => {
 // ------------------------------------------------------  API CALLS
 
 // Example API call
-const getImageOfTheDay = (state) => {
-    let { apod } = state
+const getImageOfTheDay = () => {
 
     fetch(`http://localhost:3000/apod`)
         .then(res => res.json())
-        .then(apod => updateStore(store, { apod }))
+        .then(apod => {
+            const newStore = store.set("apod", apod);
+            updateStore(store, newStore);
+        })
+        .catch(err => console.error(err));
 }
 
 //  Get Rover metadata
-const getRoverMetadata = (state, rover) => {
-    let { metadata } = state;
+const getRoverMetadata = (rover) => {
     fetch(`http://localhost:3000/rover-data/${rover}`)
         .then(res => res.json())
-        .then(metadata => updateStore(store, { metadata }));
+        .then(metadata => {
+            const newStore = store.set("metadata", metadata);
+            updateStore(store, newStore);
+        })
+        .catch(err => console.error(err));
 }
 
 //  Get Rover last photos
-const getRoverLastPhotos = (state, rover) => {
-    let { photos } = state;
+const getRoverLastPhotos = (rover) => {
     fetch(`http://localhost:3000/rover-photos/${rover}`)
         .then(res => res.json())
-        .then(photos => updateStore(store, { photos: photos, iterator: 0 }));
+        .then(photos => {
+            const newStore = store.set("photos", photos).set("iterator", 0);
+            updateStore(store, newStore)
+        })
+        .catch(err => console.error(err));
 }
