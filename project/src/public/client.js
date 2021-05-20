@@ -1,4 +1,3 @@
-
 const store = Immutable.Map({
     user: { name: "Dear Visitor" },
     apod: '',
@@ -8,15 +7,6 @@ const store = Immutable.Map({
     iterator: 0
 })
 
-
-// let store = {
-//     user: { name: "Dear Visitor" },
-//     apod: '',
-//     metadata: '',
-//     photos: '',
-//     selectedRover: 'Curiosity',
-//     iterator: 0
-// }
 
 // add our markup to the page
 const root = document.getElementById('root')
@@ -35,9 +25,6 @@ const render = async (root, state) => {
 // create content
 const App = (appState) => {
     const user = appState.get('user');
-    const apod = appState.get('apod');
-    const metadata = appState.get('metadata');
-    const photos = appState.get('photos');
     const selectedRover = appState.get('selectedRover');
 
     return `
@@ -47,11 +34,23 @@ const App = (appState) => {
             <section>
             ${radioButtons(selectedRover)}
             </section>
-            ${selectedRover === "Image" ? renderImage(apod) : roverSuite(metadata, photos, selectedRover)}
+            ${renderContent(appState, selectedRover)}
         </main>
         <footer></footer>
     `
 }
+
+//  High Order Function to return the right content to render
+const renderContent = (appState ,selectedRover) => {
+    const apod = appState.get('apod');
+    const metadata = appState.get('metadata');
+    const photos = appState.get('photos');
+    if(selectedRover === "Image")
+        return renderImage(apod);
+    else
+        return roverSuite(metadata, photos, selectedRover);
+}
+
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
