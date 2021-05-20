@@ -30,6 +30,16 @@ footer {
   font-size: 50px;
 }
 
+.image-day {
+  text-align: center;
+  width: 33%;
+  padding: 20px;
+  height: 350px;
+  min-height: 300px;
+  min-width: 300px;
+  margin-left: 31%; 
+}
+
 .radio-container {  
   text-align: center;
 }
@@ -60,6 +70,19 @@ footer {
 .radio-container label:hover {
   background-color: #444;
   color: white;
+}
+
+.rover-image {
+  text-align: center;
+}
+
+.rover-photo {
+  width: 40%;
+  height: 400px;
+  margin: 20px;
+  min-width: 400px;
+  max-width: 600px;
+  min-height: 400px;
 }
 
 /* -------------------  TABLET  --------------------- */

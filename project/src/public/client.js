@@ -50,17 +50,17 @@ const App = (state) => {
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
-    render(root, store)
+    render(root, store);
 
     //  Start point for dashboard information
-    if(store.selectedRover !== "Image"){
+    if (store.selectedRover !== "Image") {
         getRoverMetadata(store.metadata, "Curiosity");
         getRoverLastPhotos(store.photos, "Curiosity");
     }
     document.body.addEventListener("change", (event) => {
-        if(event.target.name === "landrover")
+        if (event.target.name === "landrover")
             selectRovers(event.target.value);
-    })
+    });
 })
 
 // ------------------------------------------------------  COMPONENTS
@@ -76,6 +76,14 @@ const Greeting = (name) => {
     return `
         <h1>Hello!</h1>
     `
+}
+
+const photoHide = () => {
+    let i;
+    const x = document.getElementsByClassName("roverPhoto");
+    for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+    }
 }
 
 const radioButtons = (selectedRover) => {
@@ -100,8 +108,9 @@ const radioButtons = (selectedRover) => {
     `)
 }
 
+
 const renderImage = (apod) => {
-    return(`    
+    return (`    
         <section>
             <h3>Image of the day</h3>
             <p>
@@ -115,14 +124,14 @@ const renderImage = (apod) => {
             ${ImageOfTheDay(apod)}
         </section>
     `)
-} 
+}
 
 //  Function to update the rover info and photos
 const selectRovers = (rover) => {
-    updateStore(store, {selectedRover: rover});
-    if(rover === "Image"){
+    updateStore(store, { selectedRover: rover });
+    if (rover === "Image") {
         getImageOfTheDay(store);
-    }else{
+    } else {
         getRoverMetadata(store.metadata, rover);
         getRoverLastPhotos(store.photos, rover);
     }
@@ -137,11 +146,6 @@ const ImageOfTheDay = (apod) => {
     console.log(photodate.getDate(), today.getDate());
 
     console.log(photodate.getDate() === today.getDate());
-    // if (!apod || apod.date === today.getDate()) {
-    //     getImageOfTheDay(store)
-    // }
-
-    // check if the photo of the day is actually type video!
     if (apod.media_type === "video") {
         return (`
             <p>See today's featured video <a href="${apod.url}">here</a></p>
@@ -149,21 +153,21 @@ const ImageOfTheDay = (apod) => {
             <p>${apod.explanation}</p>
         `)
     } else {
-        if(!apod.image)
+        if (!apod.image)
             return;
-            
+
         return (`
-            <img src="${apod.image.url}" height="350px" width="100%" />
+            <img class="image-day" src="${apod.image.url}" />
             <p>${apod.image.explanation}</p>
         `)
     }
 }
 
 const specificRoverData = (metadata) => {
-    
+
     const metaInfo = metadata.roverData.photo_manifest;
-    
-    return(`
+
+    return (`
         <p>The landrover ${metaInfo.name} provides this useful information:</p>
         <ul>
             <li>Landing date: ${metaInfo.landing_date}</li>
@@ -176,12 +180,15 @@ const specificRoverData = (metadata) => {
 }
 
 const specificRoverPhotos = (photos) => {
-    
+
     const roverPhotos = photos.roverPhotos.latest_photos;
 
-    return roverPhotos.map(photo => `<img src="${photo.img_src}" height="350px" width="350px" />`)
+    return (`
+            <div class="rover-image">            
+                ${roverPhotos.map(photo => `<img class="rover-photo" src="${photo.img_src}"  />`)}
+            </div>
+        `)
 }
-
 
 const roverSuite = (metadata, photos, selectedRover) => {
     return (`
