@@ -1,4 +1,4 @@
-// const { default: fetch } = require("node-fetch");
+
 
 // let store = Immutable.Map({
 //     user: { name: "Student" },
@@ -10,12 +10,12 @@
 
 
 let store = {
-    user: { name: "Student" },
+    user: { name: "Dear Visitor" },
     apod: '',
-    rovers: ['Curiosity', 'Opportunity', 'Spirit'],
     metadata: '',
     photos: '',
     selectedRover: 'Curiosity',
+    iterator: 0
 }
 
 // add our markup to the page
@@ -33,7 +33,7 @@ const render = async (root, state) => {
 
 // create content
 const App = (state) => {
-    let { rovers, apod, metadata, photos, selectedRover } = state;
+    let { apod, metadata, photos, selectedRover } = state;
 
     return `
         <header></header>
@@ -57,9 +57,21 @@ window.addEventListener('load', () => {
         getRoverMetadata(store.metadata, "Curiosity");
         getRoverLastPhotos(store.photos, "Curiosity");
     }
+    
     document.body.addEventListener("change", (event) => {
-        if (event.target.name === "landrover")
+        if (event.target.name === "landrover"){
             selectRovers(event.target.value);
+            const element = document.getElementById(event.target.id);
+            element.checked = true;
+        }
+    });
+
+    document.body.addEventListener("click", (event) => {
+        const photos = store.photos.roverPhotos.latest_photos;
+        if (event.target.id === "photoplus")
+            photoPlus(photos);
+        if (event.target.id === "photominus")
+            photoMinus(photos);
     });
 })
 
@@ -78,19 +90,25 @@ const Greeting = (name) => {
     `
 }
 
-const photoHide = () => {
-    let i;
-    const x = document.getElementsByClassName("roverPhoto");
-    for (i = 0; i < x.length; i++) {
-        x[i].style.display = "none";
-    }
+const photoPlus = (photos) => {
+    let iter = 0;
+    if (photos.length - 1 > store.iterator)
+        iter = store.iterator + 1;
+    updateStore(store, { iterator: iter })
+}
+
+const photoMinus = (photos) => {
+    let iter = 0;
+    if (photos.length - 1 > store.iterator)
+        iter = store.iterator + 1;
+    updateStore(store, { iterator: iter })
 }
 
 const radioButtons = (selectedRover) => {
     return (`
         <div class="radio-container">
             <label class="radio-inline" for="radio-image">
-                <input type="radio" id="radio-image" name="landrover" value="Image" >I
+                <input  type="radio" id="radio-image" name="landrover" value="Image" >I
             </label>
 
             <label class="radio-inline" for="radio-curiosity">
@@ -165,6 +183,9 @@ const ImageOfTheDay = (apod) => {
 
 const specificRoverData = (metadata) => {
 
+    if (!metadata || !metadata.roverData)
+        return ``;
+
     const metaInfo = metadata.roverData.photo_manifest;
 
     return (`
@@ -181,11 +202,18 @@ const specificRoverData = (metadata) => {
 
 const specificRoverPhotos = (photos) => {
 
+    if (!photos || !photos.roverPhotos)
+        return ``;
+
     const roverPhotos = photos.roverPhotos.latest_photos;
+    const imgs = roverPhotos.map(photo => `<img class="rover-photo" src="${photo.img_src}"  />`);
+    const imgUrls = roverPhotos.map(photo => photo.img_src);
 
     return (`
-            <div class="rover-image">            
-                ${roverPhotos.map(photo => `<img class="rover-photo" src="${photo.img_src}"  />`)}
+            <div class="rover-image"> 
+                <button class="select-btn" id="photominus">\<</button>
+                <img class="rover-photo" src="${imgUrls[store.iterator]}"  />
+                <button class="select-btn" id="photoplus">\></button>
             </div>
         `)
 }
@@ -226,5 +254,5 @@ const getRoverLastPhotos = (state, rover) => {
     let { photos } = state;
     fetch(`http://localhost:3000/rover-photos/${rover}`)
         .then(res => res.json())
-        .then(photos => updateStore(store, { photos }));
+        .then(photos => updateStore(store, { photos: photos, iterator: 0 }));
 }

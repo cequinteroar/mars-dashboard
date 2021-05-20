@@ -1,11 +1,9 @@
 /* -------------------  MOBILE  --------------------- */
-
 body {
   display: flex;
   flex-direction: column;
   font-family: Arial;
   min-height: 100vh;
-  width: 100vw;
   background-color: rgb(17, 16, 16);
   color: white;
 }
@@ -16,7 +14,9 @@ header {
 
 main {
   flex: 1;
-  width: 100%;
+  width: auto;
+  margin: 0;
+  padding: 50px;
 }
 
 footer {
@@ -38,6 +38,10 @@ footer {
   min-height: 300px;
   min-width: 300px;
   margin-left: 31%; 
+}
+
+p,li {
+  font-size: 18px;
 }
 
 .radio-container {  
@@ -73,31 +77,119 @@ footer {
 }
 
 .rover-image {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .rover-photo {
-  width: 40%;
-  height: 400px;
+  width: 30%;
   margin: 20px;
   min-width: 400px;
   max-width: 600px;
   min-height: 400px;
 }
 
-/* -------------------  TABLET  --------------------- */
-@media (min-width: 768px) {
-  /* use mobile */
+.select-btn {
+  width: 30px;
+  border: 0;
+  background-color: transparent;
+  color: rgb(124, 42, 42);
+  font-size: 20px;
+  height: 50px;
 }
+
+.select-btn:active {
+  color: white;
+}
+
+/* -------------------  TABLET  --------------------- */
+@media screen and (max-width: 768px) {
+  /* use mobile */
+  main {
+    padding: 40px;
+  }
+
+  .banner{
+    font-size: 32px;
+  }
+
+  p,li {
+    font-size: 22px;
+    text-align: justify !important;
+    overflow-wrap: break-word;
+  }
+
+  .image-day {
+    margin-left: 24%;
+  }
+
+  .rover-photo {
+    width: 55%;
+    min-width: 100px;
+    min-height: 100px;
+  }
+
+  .radio-container label {
+    font-size: 12px;
+  }
+
+  .select-btn {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 480px){
+  .rover-photo {
+    width: 100px;
+    min-width: 100px;
+    min-height: 100px;
+    height: 100px;
+  }
+
+  .radio-container label {
+    font-size: 10px;
+  }
+
+  .select-btn {
+    font-size: 10px;
+  }
+
+}
+
 
 /* -------------------  DESKTOP  -------------------- */
 
-@media (min-width: 1224px) {
+@media screen and (min-width: 991px)  and (max-width: 1824px) {
   /* use mobile */
-}
 
-/* -------------------  LARGE SCREENS  -------------- */
 
-@media (min-width: 1824px) {
-  /* use mobile */
+  .banner{
+    font-size: 60px !important;
+  }
+
+  h1 {
+    font-size: 54px;
+  }
+
+  h2 {
+    font-size: 50px;
+  }
+
+  h3 {
+    font-size: 44px;
+  }
+
+  p,li {
+    font-size: 40px;
+    text-align: justify !important;
+  }
+
+  .radio-container label {
+    font-size: 22px;
+  }
+
+  .select-btn {
+    font-size: 22px;
+  }
 }
