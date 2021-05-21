@@ -65,8 +65,6 @@ window.addEventListener('load', () => {
     document.body.addEventListener("change", (event) => {
         if (event.target.name === "landrover"){
             selectRovers(event.target.value);
-            const element = document.getElementById(event.target.id);
-            element.checked = true;
         }
     });
 
@@ -234,9 +232,9 @@ const specificRoverPhotos = (photos) => {
 
     return (`
             <div class="rover-image"> 
-                <button class="select-btn" id="photominus">\<</button>
+                <button class="select-btn" id="photominus" ${imgUrls.length === 1 ? "disabled":""}>\<</button>
                 <img class="rover-photo" src="${imgUrls[iterator]}"  />
-                <button class="select-btn" id="photoplus">\></button>
+                <button class="select-btn" id="photoplus" ${imgUrls.length === 1 ? "disabled":""}>\></button>
             </div>
         `)
 }

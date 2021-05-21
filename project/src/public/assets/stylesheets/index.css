@@ -105,6 +105,10 @@ p,li {
   color: rgb(124, 42, 42);
 }
 
+.select-btn:disabled {
+  color: #444;
+}
+
 ul {
   list-style: none;
 }
