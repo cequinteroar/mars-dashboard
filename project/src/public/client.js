@@ -115,19 +115,19 @@ const photoAdvance = (value) => {
 const radioButtons = (selectedRover) => {
     return (`
         <div class="radio-container">
-            <label class="radio-inline" for="radio-image">
+            <label class="radio-inline ${selectedRover === "Image" ? "test-style":""}" for="radio-image">
                 <input  type="radio" id="radio-image" name="landrover" value="Image" >I
             </label>
 
-            <label class="radio-inline" for="radio-curiosity">
+            <label class="radio-inline ${selectedRover === "Curiosity" ? "test-style":""}" for="radio-curiosity">
                 <input type="radio" id="radio-curiosity" name="landrover" value="Curiosity" >C
             </label>
             
-            <label class="radio-inline" for="radio-opportunity">
+            <label class="radio-inline ${selectedRover === "Opportunity" ? "test-style":""}" for="radio-opportunity">
                 <input type="radio" id="radio-opportunity" name="landrover" value="Opportunity">O
             </label>
 
-            <label class="radio-inline" for="radio-spirit">
+            <label class="radio-inline ${selectedRover === "Spirit" ? "test-style":""}" for="radio-spirit">
                 <input type="radio" id="radio-spirit" name="landrover" value="Spirit">S
             </label>  
         </div>  
