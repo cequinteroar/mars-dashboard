@@ -20,7 +20,7 @@ app.use('/', express.static(path.join(__dirname, '../public')))
 app.get('/rover-data/:rover', async (req, res) => {
     try {
         const rover = req.params.rover;
-        let roverData = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${process.env.API_KEY}`)
+        const roverData = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${process.env.API_KEY}`)
             .then(res => res.json());
         res.send({ roverData });
     } catch(err) {
@@ -32,7 +32,7 @@ app.get('/rover-data/:rover', async (req, res) => {
 app.get('/rover-photos/:rover', async (req, res) => {
     try {
         const rover = req.params.rover;
-        let roverPhotos = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover.toLowerCase()}/latest_photos?api_key=${process.env.API_KEY}`)
+        const roverPhotos = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover.toLowerCase()}/latest_photos?api_key=${process.env.API_KEY}`)
             .then(res => res.json());
             
         res.send({ roverPhotos });
@@ -45,7 +45,7 @@ app.get('/rover-photos/:rover', async (req, res) => {
 // example API call
 app.get('/apod', async (req, res) => {
     try {
-        let image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`)
+        const image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${process.env.API_KEY}`)
             .then(res => res.json())
         res.send({ image })
     } catch (err) {

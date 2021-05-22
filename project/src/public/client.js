@@ -41,11 +41,11 @@ const App = (appState) => {
 }
 
 //  High Order Function to return the right content to render
-const renderContent = (appState ,selectedRover) => {
+const renderContent = (appState, selectedRover) => {
     const apod = appState.get('apod');
     const metadata = appState.get('metadata');
     const photos = appState.get('photos');
-    if(selectedRover === "Image")
+    if (selectedRover === "Image")
         return renderImage(apod);
     else
         return roverSuite(metadata, photos, selectedRover);
@@ -61,9 +61,9 @@ window.addEventListener('load', () => {
         getRoverMetadata("Curiosity");
         getRoverLastPhotos("Curiosity");
     }
-    
+
     document.body.addEventListener("change", (event) => {
-        if (event.target.name === "landrover"){
+        if (event.target.name === "landrover") {
             selectRovers(event.target.value);
         }
     });
@@ -97,12 +97,12 @@ const photoAdvance = (value) => {
     const storeIterator = store.get("iterator");
     const photos = store.get("photos");
     const latest_photos = photos.roverPhotos.latest_photos;
-    if(storeIterator === latest_photos.length - 1 && value > 0){
+    if (storeIterator === latest_photos.length - 1 && value > 0) {
         iter = 0
-    }else{
+    } else {
         if (storeIterator <= latest_photos.length - 1)
             iter = storeIterator + value;
-        if(storeIterator === 0 && value < 0)
+        if (storeIterator === 0 && value < 0)
             iter = latest_photos.length - 1;
     }
     const newStore = store.set("iterator", iter);
@@ -113,19 +113,19 @@ const photoAdvance = (value) => {
 const radioButtons = (selectedRover) => {
     return (`
         <div class="radio-container">
-            <label class="radio-inline ${selectedRover === "Image" ? "test-style":""}" for="radio-image">
+            <label class="radio-inline ${selectedRover === "Image" ? "test-style" : ""}" for="radio-image">
                 <input  type="radio" id="radio-image" name="landrover" value="Image" >I
             </label>
 
-            <label class="radio-inline ${selectedRover === "Curiosity" ? "test-style":""}" for="radio-curiosity">
+            <label class="radio-inline ${selectedRover === "Curiosity" ? "test-style" : ""}" for="radio-curiosity">
                 <input type="radio" id="radio-curiosity" name="landrover" value="Curiosity" >C
             </label>
             
-            <label class="radio-inline ${selectedRover === "Opportunity" ? "test-style":""}" for="radio-opportunity">
+            <label class="radio-inline ${selectedRover === "Opportunity" ? "test-style" : ""}" for="radio-opportunity">
                 <input type="radio" id="radio-opportunity" name="landrover" value="Opportunity">O
             </label>
 
-            <label class="radio-inline ${selectedRover === "Spirit" ? "test-style":""}" for="radio-spirit">
+            <label class="radio-inline ${selectedRover === "Spirit" ? "test-style" : ""}" for="radio-spirit">
                 <input type="radio" id="radio-spirit" name="landrover" value="Spirit">S
             </label>  
         </div>  
@@ -189,24 +189,13 @@ const ImageOfTheDay = (apod) => {
 }
 
 //  Section to render the rover meta data
-const specificRoverData = (metadata) => {
+const specificRoverData = (metadata, iconSelect) => {
 
     if (!metadata || !metadata.roverData)
         return ``;
 
     const metaInfo = metadata.roverData.photo_manifest;
-    let icon ="";
-    switch(metaInfo.status){
-        case "active":
-            icon = '<i class="fas fa-wave-square"></i>';
-            break;
-        case "complete":
-            icon = '<i class="fas fa-check-circle"></i>';
-            break;
-        default:
-            icon = '<i class="fas fa-times-circle"></i>';
-            break;
-    }
+    const icon = iconSelect(metaInfo.status);
 
     return (`
         <p>The landrover ${metaInfo.name} provides this useful information:</p>
@@ -221,31 +210,51 @@ const specificRoverData = (metadata) => {
 }
 
 //  Section to render the rover photos
-const specificRoverPhotos = (photos) => {
+const specificRoverPhotos = (photos, toUrl) => {
 
     if (!photos || !photos.roverPhotos)
         return ``;
 
-    const roverPhotos = photos.roverPhotos.latest_photos;
     const iterator = store.get("iterator");
-    const imgUrls = roverPhotos.map(photo => photo.img_src);
-
+    const imgUrls = toUrl(photos);
     return (`
             <div class="rover-image"> 
-                <button class="select-btn" id="photominus" ${imgUrls.length === 1 ? "disabled":""}>\<</button>
+                <button class="select-btn" id="photominus" ${imgUrls.length === 1 ? "disabled" : ""}>\<</button>
                 <img class="rover-photo" src="${imgUrls[iterator]}"  />
-                <button class="select-btn" id="photoplus" ${imgUrls.length === 1 ? "disabled":""}>\></button>
+                <button class="select-btn" id="photoplus" ${imgUrls.length === 1 ? "disabled" : ""}>\></button>
             </div>
         `)
 }
 
+
 //  Section to show the data got from the API
 const roverSuite = (metadata, photos, selectedRover) => {
+    const toUrl = (photos) => {
+        const roverPhotos = photos.roverPhotos.latest_photos;
+        return roverPhotos.map(photo => photo.img_src);
+    }
+
+    const iconSelect = (status) => {
+        let icon = "";
+        switch (status) {
+            case "active":
+                icon = '<i class="fas fa-wave-square"></i>';
+                break;
+            case "complete":
+                icon = '<i class="fas fa-check-circle"></i>';
+                break;
+            default:
+                icon = '<i class="fas fa-times-circle"></i>';
+                break;
+        }
+        return icon;
+    }
+
     return (`
         <section>
             <h1 class="rover-name">${selectedRover}</h2>
-            ${specificRoverData(metadata)}
-            ${specificRoverPhotos(photos)}
+            ${specificRoverData(metadata, iconSelect)}
+            ${specificRoverPhotos(photos, toUrl)}
         </section>    
     `)
 }
